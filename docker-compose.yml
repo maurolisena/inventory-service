@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  inventory-service:
+    container_name: inventory-service
+    image: inventory-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    depends_on:
+      mysql_database:
+        condition: service_healthy
+    networks:
+      - application-network
+
+  mysql_database:
+    image: mysql/mysql-server:latest
+    container_name: mysql_inventory_database
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: "mlisena"
+      MYSQL_PASSWORD: "A8424628"
+      MYSQL_DATABASE: "inventory_db"
+    networks:
+      - application-network
+    volumes:
+      - mysql_database_data:/data/db
+    healthcheck:
+        test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+        start_period: 5s
+        interval: 5s
+        timeout: 20s
+        retries: 10
+
+networks:
+  application-network:
+    external: true
+
+volumes:
+  mysql_database_data:
