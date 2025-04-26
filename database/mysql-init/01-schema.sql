@@ -1,0 +1,8 @@
+CREATE DATABASE IF NOT EXISTS inventory_db;
+USE inventory_db;
+
+CREATE TABLE IF NOT EXISTS inventory (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    skuCode VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL
+);
