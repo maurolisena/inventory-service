@@ -1,6 +1,6 @@
 USE inventory_db;
 
-INSERT INTO inventory (skuCode, quantity) VALUES
+INSERT INTO inventory (sku_code, quantity) VALUES
     ('FO-001', 100),
     ('PF-002', 200),
     ('AD-003', 150),
