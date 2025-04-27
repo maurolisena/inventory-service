@@ -1,6 +1,8 @@
 package com.mlisena.inventory.dto.mapper;
 
+import com.mlisena.inventory.dto.payload.CreateInventoryEvent;
 import com.mlisena.inventory.dto.request.CreateInventoryRequest;
+import com.mlisena.inventory.dto.response.InventoryResponse;
 import com.mlisena.inventory.entity.Inventory;
 
 public class InventoryMapper {
@@ -14,5 +16,13 @@ public class InventoryMapper {
                 .skuCode(request.skuCode())
                 .quantity(request.quantity())
                 .build();
+    }
+
+    public static InventoryResponse toResponse(Inventory inventory) {
+        return new InventoryResponse(inventory.getSkuCode(), inventory.getQuantity());
+    }
+
+    public static CreateInventoryRequest toRequest(CreateInventoryEvent event) {
+        return new CreateInventoryRequest(event.skuCode(), event.quantity());
     }
 }
