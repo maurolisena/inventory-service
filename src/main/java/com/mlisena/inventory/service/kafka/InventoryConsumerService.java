@@ -1,5 +1,6 @@
 package com.mlisena.inventory.service.kafka;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mlisena.inventory.dto.mapper.InventoryMapper;
 import com.mlisena.inventory.dto.payload.CreateInventoryEvent;
 import com.mlisena.inventory.dto.request.CreateInventoryRequest;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class InventoryConsumerService {
 
     private final InventoryService inventoryService;
+    private final ObjectMapper objectMapper;
 
     @Value("${kafka.consumer.group-id}")
     private String groupId;
@@ -25,9 +26,15 @@ public class InventoryConsumerService {
     private String inventoryCreatedTopic;
 
     @KafkaListener(topics = "${kafka.topics.inventory-created}", groupId = "${kafka.consumer.group-id}")
-    public void consumeInventoryCreatedEvent(@Payload CreateInventoryEvent payload) {
-        log.info("Consumed message from topic: {}", payload);
-        CreateInventoryRequest request = InventoryMapper.toRequest(payload);
+    public void consumeInventoryCreatedEvent(String message) {
+        log.info("Consumed message from topic: {}", message);
+        CreateInventoryEvent event = null;
+        try {
+            event = objectMapper.readValue(message, CreateInventoryEvent.class);
+        } catch (Exception e) {
+            log.warn("Failed to deserialize the message to CreateInventoryEvent: [{}]", e.getMessage());
+        }
+        CreateInventoryRequest request = InventoryMapper.toRequest(event);
         inventoryService.createInventory(request);
     }
 }
