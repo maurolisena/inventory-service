@@ -26,15 +26,15 @@ public class InventoryConsumerService {
     private String inventoryCreatedTopic;
 
     @KafkaListener(topics = "${kafka.topics.inventory-created}", groupId = "${kafka.consumer.group-id}")
-    public void consumeInventoryCreatedEvent(String message) {
-        log.info("Consumed message from topic: {}", message);
-        CreateInventoryEvent event = null;
+    public void consumeInventoryCreatedEvent(String event) {
+        log.info("Consumed message from topic: {}", event);
+        CreateInventoryEvent payload = null;
         try {
-            event = objectMapper.readValue(message, CreateInventoryEvent.class);
+            payload = objectMapper.readValue(event, CreateInventoryEvent.class);
         } catch (Exception e) {
             log.warn("Failed to deserialize the message to CreateInventoryEvent: [{}]", e.getMessage());
         }
-        CreateInventoryRequest request = InventoryMapper.toRequest(event);
+        CreateInventoryRequest request = InventoryMapper.toRequest(payload);
         inventoryService.createInventory(request);
     }
 }

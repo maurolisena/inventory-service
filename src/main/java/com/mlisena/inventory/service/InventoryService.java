@@ -4,11 +4,15 @@ import com.mlisena.inventory.dto.mapper.InventoryMapper;
 import com.mlisena.inventory.dto.request.CreateInventoryRequest;
 import com.mlisena.inventory.dto.response.InventoryResponse;
 import com.mlisena.inventory.entity.Inventory;
+import com.mlisena.inventory.exception.inventory.InventoryNotFoundException;
 import com.mlisena.inventory.repository.InventoryRepository;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,13 +21,6 @@ public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
 
-    public boolean checkStock(String skuCode, Integer quantity) {
-        log.info("Checking stock for SKU code: {} with quantity: {}", skuCode, quantity);
-        boolean isInStock = inventoryRepository.existsBySkuCodeAndQuantityIsGreaterThanEqual(skuCode, quantity);
-        log.info("SKU code {} has stock: {}", skuCode, isInStock);
-        return isInStock;
-    }
-
     public void createInventory(CreateInventoryRequest request) {
         log.info("Creating inventory for SKU code: {} with quantity: {}", request.skuCode(), request.quantity());
         Inventory inventory = InventoryMapper.toEntity(request);
@@ -31,13 +28,33 @@ public class InventoryService {
         log.info("Inventory created successfully for SKU code: {}", request.skuCode());
     }
 
-    public InventoryResponse getInventory(@NotBlank String skuCode) {
-        log.info("Getting inventory for SKU code: {}", skuCode);
-        Inventory inventory = inventoryRepository.findBySkuCode(skuCode);
-        if (inventory == null) {
-            throw new RuntimeException("No inventory found for SKU code: " + skuCode);
-        }
+    public boolean checkProductStock(String skuCode, Integer quantity) {
+        log.info("Checking stock for SKU code: {} with quantity: {}", skuCode, quantity);
+        boolean isInStock = inventoryRepository.existsBySkuCodeAndQuantityIsGreaterThanEqual(skuCode, quantity);
+        log.info("SKU code {} has stock: {}", skuCode, isInStock);
+        return isInStock;
+    }
+
+    public InventoryResponse getProductInventory(@NotBlank String skuCode) {
+        log.info("Getting inventory for product with SKU code: {}", skuCode);
+        Inventory inventory = inventoryRepository
+                .findBySkuCode(skuCode)
+                .orElseThrow(() -> new InventoryNotFoundException("Inventory not found for SKU code: " + skuCode));
+
         log.info("Inventory found for SKU code: {} with quantity: {}", skuCode, inventory.getQuantity());
         return InventoryMapper.toResponse(inventory);
+    }
+
+    public List<InventoryResponse> getProductInventories(List<String> skuCodeList) {
+        log.info("Getting inventory for product to SKU code list");
+        List<Inventory> inventories = inventoryRepository.findBySkuCodeIn(skuCodeList);
+
+        if (inventories.isEmpty()) {
+            log.warn("No inventory records found for give SKU code list");
+        }
+
+        return inventories.stream()
+                .map(InventoryMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

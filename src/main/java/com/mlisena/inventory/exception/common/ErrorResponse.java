@@ -1,4 +1,4 @@
-package com.mlisena.inventory.exception;
+package com.mlisena.inventory.exception.common;
 
 import lombok.Builder;
 import lombok.Data;

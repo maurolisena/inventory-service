@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/inventory")
 @RequiredArgsConstructor
@@ -29,7 +31,14 @@ public class InventoryController {
 
     @GetMapping("/{skuCode}")
     public ResponseEntity<InventoryResponse> getInventory(@PathVariable @NotBlank String skuCode) {
-        return ResponseEntity.status(HttpStatus.OK).body(inventoryService.getInventory(skuCode));
+        InventoryResponse inventory = inventoryService.getProductInventory(skuCode);
+        return ResponseEntity.status(HttpStatus.OK).body(inventory);
+    }
+
+    @PostMapping("/list")
+    public ResponseEntity<List<InventoryResponse>> getInventories(@RequestBody List<String> skuCodeList) {
+        List<InventoryResponse> inventories = inventoryService.getProductInventories(skuCodeList);
+        return ResponseEntity.status(HttpStatus.OK).body(inventories);
     }
 
     @GetMapping("/check-stock")
@@ -37,6 +46,7 @@ public class InventoryController {
             @RequestParam @NotBlank String skuCode,
             @RequestParam @Positive @NotNull Integer quantity
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(inventoryService.checkStock(skuCode, quantity));
+        boolean checkProductStock = inventoryService.checkProductStock(skuCode, quantity);
+        return ResponseEntity.status(HttpStatus.OK).body(checkProductStock);
     }
 }
