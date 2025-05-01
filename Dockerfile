@@ -9,6 +9,10 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/target/inventory-service-0.0.1-SNAPSHOT.jar app.jar
 
+# Copia el script de espera
+COPY wait-for-services.sh /wait-for-services.sh
+RUN chmod +x /wait-for-services.sh
+
 # Exponer puerto y ejecutar la aplicación
-EXPOSE 8083
+EXPOSE 9002
 ENTRYPOINT ["java", "-jar", "app.jar"]

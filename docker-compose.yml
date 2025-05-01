@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8085:8085"
+      - "9002:9002"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-server:29092
@@ -15,20 +15,20 @@ services:
       mysql_database:
         condition: service_healthy
     networks:
-      - application-network
+      - backend
 
   mysql_database:
     image: mysql/mysql-server:latest
     container_name: mysql_inventory_database
     ports:
-      - "3307:3306"
+      - "3306:3306"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_USER: "mlisena"
       MYSQL_PASSWORD: "A8424628"
       MYSQL_DATABASE: "inventory_db"
     networks:
-      - application-network
+      - backend
     volumes:
       - ./database/mysql-init:/docker-entrypoint-initdb.d
       - mysql_database_data:/data/db
@@ -40,7 +40,7 @@ services:
         retries: 10
 
 networks:
-  application-network:
+  backend:
     external: true
 
 volumes:
