@@ -6,11 +6,16 @@ import com.mlisena.inventory.dto.response.InventoryResponse;
 import com.mlisena.inventory.entity.Inventory;
 import com.mlisena.inventory.exception.inventory.InventoryNotFoundException;
 import com.mlisena.inventory.repository.InventoryRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,14 +26,15 @@ public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
 
-    public void createInventory(CreateInventoryRequest request) {
+    @Transactional
+    public void createInventory(@Valid CreateInventoryRequest request) {
         log.info("Creating inventory for SKU code: {} with quantity: {}", request.skuCode(), request.quantity());
         Inventory inventory = InventoryMapper.toEntity(request);
         inventoryRepository.save(inventory);
         log.info("Inventory created successfully for SKU code: {}", request.skuCode());
     }
 
-    public boolean checkProductStock(String skuCode, Integer quantity) {
+    public boolean checkProductStock(@NotBlank String skuCode, @Positive Integer quantity) {
         log.info("Checking stock for SKU code: {} with quantity: {}", skuCode, quantity);
         boolean isInStock = inventoryRepository.existsBySkuCodeAndQuantityIsGreaterThanEqual(skuCode, quantity);
         log.info("SKU code {} has stock: {}", skuCode, isInStock);
@@ -45,16 +51,29 @@ public class InventoryService {
         return InventoryMapper.toResponse(inventory);
     }
 
-    public List<InventoryResponse> getProductInventories(List<String> skuCodeList) {
+    public List<InventoryResponse> getProductInventories(@NotEmpty List<String> skuCodeList) {
         log.info("Getting inventory for product to SKU code list");
         List<Inventory> inventories = inventoryRepository.findBySkuCodeIn(skuCodeList);
 
         if (inventories.isEmpty()) {
             log.warn("No inventory records found for give SKU code list");
+            return List.of();
         }
 
-        return inventories.stream()
-                .map(InventoryMapper::toResponse)
-                .collect(Collectors.toList());
+        final int batchSize = 30;
+        List<InventoryResponse> response = new ArrayList<>();
+
+        for (int i = 0; i < skuCodeList.size(); i += batchSize) {
+            List<String> batch = skuCodeList.subList(i, Math.min(i + batchSize, skuCodeList.size()));
+            log.info("Processing batch of size: {}", batch.size());
+
+            response.addAll(
+                inventories.stream()
+                    .map(InventoryMapper::toResponse)
+                    .toList()
+            );
+        }
+
+        return response;
     }
 }
