@@ -11,37 +11,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-server:29092
-    depends_on:
-      mysql_database:
-        condition: service_healthy
     networks:
       - backend
-
-  mysql_database:
-    image: mysql:8.0
-    container_name: mysql_inventory_database
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_USER: "mlisena"
-      MYSQL_PASSWORD: "A8424628"
-      MYSQL_DATABASE: "inventory_db"
-    networks:
-      - backend
-    volumes:
-      - ./database/mysql-init:/docker-entrypoint-initdb.d
-      - mysql_database_data:/data/db
-    healthcheck:
-        test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-        start_period: 5s
-        interval: 5s
-        timeout: 20s
-        retries: 10
 
 networks:
   backend:
     external: true
-
-volumes:
-  mysql_database_data:
