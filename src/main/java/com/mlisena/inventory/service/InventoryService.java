@@ -1,11 +1,13 @@
 package com.mlisena.inventory.service;
 
 import com.mlisena.inventory.dto.mapper.InventoryMapper;
+import com.mlisena.inventory.dto.payload.InventoryCreatedConfirmation;
 import com.mlisena.inventory.dto.request.CreateInventoryRequest;
 import com.mlisena.inventory.dto.response.InventoryResponse;
 import com.mlisena.inventory.entity.Inventory;
 import com.mlisena.inventory.exception.inventory.InventoryNotFoundException;
 import com.mlisena.inventory.repository.InventoryRepository;
+import com.mlisena.inventory.service.kafka.InventoryKafkaProducer;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class InventoryService {
 
     private final InventoryRepository inventoryRepository;
+    private final InventoryKafkaProducer inventoryKafkaProducer;
 
     @Transactional
     public void createInventory(@Valid CreateInventoryRequest request) {
@@ -32,6 +34,12 @@ public class InventoryService {
         Inventory inventory = InventoryMapper.toEntity(request);
         inventoryRepository.save(inventory);
         log.info("Inventory created successfully for SKU code: {}", request.skuCode());
+
+        InventoryCreatedConfirmation payload = InventoryCreatedConfirmation.builder()
+                .skuCode(request.skuCode())
+                .success(true)
+                .build();
+        inventoryKafkaProducer.confirmCreateInventoryEvent(payload);
     }
 
     public boolean checkProductStock(@NotBlank String skuCode, @Positive Integer quantity) {
