@@ -1,7 +1,6 @@
 package com.mlisena.inventory.service.kafka;
 
 import com.mlisena.inventory.configuration.kafka.KafkaProperties;
-import com.mlisena.inventory.dto.payload.InventoryCreateRequest;
 import com.mlisena.inventory.dto.payload.InventoryCreatedConfirmation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,7 @@ public class InventoryKafkaProducer {
     private final KafkaProperties kafkaProperties;
 
     public void confirmCreateInventoryEvent(InventoryCreatedConfirmation payload) {
-        String topic = kafkaProperties.getTopics().getInventoryCreateRequest();
+        String topic = kafkaProperties.getTopics().getInventoryCreatedConfirmation();
         String jsonPayload = KafkaUtils.serialize(payload);
         log.info("Producing inventory created event to kafka: {}", jsonPayload);
 

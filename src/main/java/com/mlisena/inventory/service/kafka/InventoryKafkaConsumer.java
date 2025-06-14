@@ -17,7 +17,7 @@ public class InventoryKafkaConsumer {
     private final InventoryService inventoryService;
 
     @KafkaListener(
-            topics = "#{__listener.kafkaProperties.topics.inventoryCreateRequest}",
+            topics = "${kafka.topics.inventory-create-request}",
             groupId = "${kafka.consumer.group-id}"
     )
     public void confirmInventoryCreatedEvent(String payload) {
