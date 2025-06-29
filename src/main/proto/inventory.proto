@@ -1,0 +1,24 @@
+syntax = "proto3";
+package inventory;
+
+service InventoryClientGRPC {
+  rpc GetInventory (GetInventoryRequest) returns (InventoryResponse);
+  rpc GetInventories (GetInventoriesRequest) returns (InventoriesResponse);
+}
+
+message GetInventoryRequest {
+  string skuCode = 1;
+}
+
+message GetInventoriesRequest {
+  repeated string skuCodes = 1;
+}
+
+message InventoryResponse {
+  string skuCode = 1;
+  int32 quantity = 2;
+}
+
+message InventoriesResponse {
+  repeated InventoryResponse inventories = 1;
+}

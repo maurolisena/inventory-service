@@ -7,7 +7,7 @@ import lombok.Builder;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record InventoryCreatedConfirmation(
+public record InventoryCreatedPayload(
         @NotBlank String skuCode,
         @NotNull Boolean success
 ) { }

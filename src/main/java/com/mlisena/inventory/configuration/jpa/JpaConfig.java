@@ -1,4 +1,4 @@
-package com.mlisena.inventory.configuration;
+package com.mlisena.inventory.configuration.jpa;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

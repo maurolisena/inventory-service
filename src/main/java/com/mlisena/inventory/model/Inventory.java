@@ -1,4 +1,4 @@
-package com.mlisena.inventory.entity;
+package com.mlisena.inventory.model;
 
 import jakarta.persistence.*;
 import lombok.*;
